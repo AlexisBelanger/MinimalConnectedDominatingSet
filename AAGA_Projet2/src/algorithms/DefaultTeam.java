@@ -2,29 +2,20 @@ package algorithms;
 
 import java.awt.Point;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
-
-import javax.swing.plaf.synth.SynthScrollPaneUI;
-import javax.swing.text.html.HTMLDocument.HTMLReader.BlockAction;
 
 import Papier.Colour;
 import Papier.MarkedPoint;
-import Papier.DefaultTeam.Edge;
-import Papier.DefaultTeam.TaggedPoint;
 
 public class DefaultTeam {
 	//Sort function : 
@@ -431,25 +422,163 @@ public class DefaultTeam {
 
 
 
-
-	//----------------- MIS + Steiner --------------------------------//
+	//------------------------------------------------------------------------//
+	//------------------ MIS Basique + Steiner (papier) ----------------------//
+	//------------------------------------------------------------------------//
+	
+//	public ArrayList<Point> calculConnectedDominatingSet(ArrayList<Point> points, int edgeThreshold) {
+//
+//		
+//		
+//		
+//		System.out.println("MARQUAGE....");
+//
+//		Collections.shuffle(points);
+//
+//		
+//	    
+//	    //Creation du MIS
+//	    ArrayList<Point> blackPoints = new ArrayList<Point>();
+//	    ArrayList<Point> greyPoints = new ArrayList<Point>();
+//	    ArrayList<Point> reste = (ArrayList<Point>) points.clone();
+//	    ArrayList<ArrayList<MarkedPoint>> composants = new ArrayList<ArrayList<MarkedPoint>>();
+//	    
+//	    
+//	    blackPoints.add(reste.get(0));
+//	    for(Point p : neighbor(points.get(0), points, edgeThreshold)) {
+//	    	reste.remove(p);
+//	    	greyPoints.add(p);
+//
+//	    }
+//	    reste.remove(points.get(0));
+//	    
+//	    
+//	    while(!reste.isEmpty()) {
+//	    	
+//	    	ArrayList<Point> clone_reste = (ArrayList<Point>) reste.clone();
+//	    	Collections.shuffle(clone_reste);
+//	    	for(int n = 0; n<clone_reste.size(); n++) {
+//	    		Point p = clone_reste.get(n);
+//	    		ArrayList<Point> voisins = neighbor(p, points, edgeThreshold);
+//	    		boolean isGreyNeigh = false;
+//	    		boolean noBlackNeigh = true;
+//	    		
+//	    		for(Point q : voisins) {
+//	    			if(greyPoints.contains(q)) {
+//	    				isGreyNeigh=true;
+//	    			}
+//	    			if(blackPoints.contains(q)) {
+//	    				noBlackNeigh=false;
+//	    			}
+//	    		}
+//	    		if(isGreyNeigh && noBlackNeigh) {
+//	    			blackPoints.add(p);
+//	    			for(Point q : voisins) {
+//	    				
+//	    				if(reste.contains(q)) {
+//	    					greyPoints.add(q);
+//	        				reste.remove(q);
+//	    				}
+//	    				
+//	    			}
+//	    			reste.remove(p);
+//	    			
+//	    		}
+//	    	}
+//	    }
+//
+//	    int comp = 0;
+//	    ArrayList<MarkedPoint> blacks = new ArrayList<MarkedPoint>();
+//	    
+//	    for(Point p : blackPoints) {
+//	    	MarkedPoint point = new MarkedPoint(p.x, p.y, Colour.BLACK, comp);
+//	    	composants.add(new ArrayList<MarkedPoint>());
+//	    	composants.get(comp).add(point);
+//	    	comp++;
+//	    	blacks.add(point);
+//	    }
+//	    
+//	    
+//	    
+//	    ArrayList<MarkedPoint> greys = new ArrayList<MarkedPoint>();
+//	    for(Point p : greyPoints) {
+//	    	greys.add(new MarkedPoint(p.x, p.y, Colour.GREY));
+//	    }
+//	    
+//	    
+//	    
+//	    
+//	    Set<MarkedPoint> blues = new HashSet<MarkedPoint>();
+//	  
+//	    System.out.println("MARQUAGE TERMINE");
+//	    ArrayList<Point> sol = new ArrayList<Point>();
+//	    for(MarkedPoint p : blacks) {
+//	    		sol.add(p);
+//	    }
+//	    System.out.println("CREATION LISTE TERMINE");	    
+//	    System.out.println("CREATION DES NOEUDS BLEUS.....");
+//	    
+//	    
+//	    for(int i =5; i>1; i--) {
+//	    	System.out.println("i = "+i);
+//	    	
+//    		for(MarkedPoint p : greys) {
+//    			if(p.getColour()==Colour.GREY) {// je check si le noeud est gris, histoire de pas risque de retraiter un bleu
+//    											// mais normalement pas besoin
+//	    			
+//    				//---------------------------- j'utilise ca pour trouver le nombre de black-blue component differents
+//    				Set<Integer> diff = new HashSet<Integer>(); 
+//	    			ArrayList<MarkedPoint> voisins = neighborMarked(p, blacks, edgeThreshold);
+//	    			for(MarkedPoint q : voisins) {
+//	    				diff.add(q.getComp());
+//	    			}
+//	    			//----------------------------
+//	    			
+//	    			if(diff.size()==i || diff.size()>5) {
+//	    				p.setColour(Colour.BLUE); // si il a assez de black blue comp, je l'ajoute
+//	    				blues.add(p);
+//	    				for(int j =1; j< voisins.size(); j++) { // je parcours ses voisins noirs
+//	    					
+//	    					if(voisins.get(j).getComp()!=voisins.get(0).getComp()) { // pour eviter qu'un voisin du meme composant se reajoute
+//		    					for(MarkedPoint q : composants.get(voisins.get(j).getComp())) {
+//		    						q.setComponent(voisins.get(0).getComp()); //je MaJ le numero de composant du point
+//		    					}
+//		    					// et ici j'ajoute tous les points de l'arraylist correspondant au composant du point que je regarde
+//		    					// a l'arraylist du composant du premier point noir des voisins
+//		    					composants.get(voisins.get(0).getComp()).addAll(composants.get((voisins.get(j).getComp())));
+//		    					//et je les retire de leur ancienne liste
+//		    					composants.get((voisins.get(j).getComp())).clear(); 
+//	    					}   					
+//	    				}
+//	    			}
+//    			}
+//    		}
+//		}
+//	    System.out.println("CREATION DES NOEUDS BLEUS TERMINEE");
+//	    
+//	   
+//	    ArrayList<Point> dom_sol = new ArrayList<Point>();
+//	    dom_sol.addAll(blues);
+//	    dom_sol.addAll(blacks);
+//
+//	    return dom_sol;
+//
+//	}
+	
+			//----------------------------------------------------------------//
+			//--------------- MIS Ameliore + Steiner (papier) ----------------//
+			//----------------------------------------------------------------//
 	
 	public ArrayList<Point> calculConnectedDominatingSet(ArrayList<Point> points, int edgeThreshold) {
-
-		
-		
-		String test = "test_1";
-		
 		System.out.println("MARQUAGE....");
-
-		Collections.shuffle(points);
-
 		
-	    
+		Collections.shuffle(points);
+		
+		
+		
 	    //Creation du MIS
 	    ArrayList<Point> blackPoints = new ArrayList<Point>();
 	    ArrayList<Point> greyPoints = new ArrayList<Point>();
-	    ArrayList<Point> bluePoints = new ArrayList<Point>();
 	    ArrayList<Point> reste = (ArrayList<Point>) points.clone();
 	    ArrayList<ArrayList<MarkedPoint>> composants = new ArrayList<ArrayList<MarkedPoint>>();
 	    
@@ -467,7 +596,7 @@ public class DefaultTeam {
 	    for(Point p : neighbor(points.get(ind_max), points, edgeThreshold)) {
 	    	reste.remove(p);
 	    	greyPoints.add(p);
-
+	
 	    }
 	    reste.remove(points.get(ind_max));
 	    
@@ -508,213 +637,264 @@ public class DefaultTeam {
 				
 				if(reste.contains(q)) {
 					greyPoints.add(q);
-    				reste.remove(q);
+					reste.remove(q);
 				}
 				
 			}
 	    	
-	    	
 	    }
-	    
-	    
-//	    System.out.println(blackPoints.size());
-//	    for(Point p : blackPoints) {
-//	    	for(Point q : blackPoints) {
-//	    		if(p.distance(q)<edgeThreshold && !p.equals(q)) {
-//	    			System.out.println("P = " + p);
-//	    			System.out.println("Q = " + q);
-//	    			System.out.println("-------------");
-//	    		}
-//	    	}
-//	    }
-	    for(Point p : blackPoints) {
-	    	System.out.println(p);
-//	    	if(p.x==1098 && p.y == 473) {
-//	    		System.out.println(neighbor(p, blackPoints, edgeThreshold).size());
-//	    	}
-	    }
-	    
-	    int comp = 0;
-	    ArrayList<MarkedPoint> blacks = new ArrayList<MarkedPoint>();
-	    
-	    for(Point p : blackPoints) {
-	    	MarkedPoint point = new MarkedPoint(p.x, p.y, Colour.BLACK, comp);
-	    	composants.add(new ArrayList<MarkedPoint>());
-	    	composants.get(comp).add(point);
-	    	comp++;
-	    	blacks.add(point);
-	    }
-	    
-	    
-	    
-	    ArrayList<MarkedPoint> greys = new ArrayList<MarkedPoint>();
-	    for(Point p : greyPoints) {
-	    	greys.add(new MarkedPoint(p.x, p.y, Colour.GREY));
-	    }
-	    
-	    
-	    
-	    
-	    Set<MarkedPoint> blues = new HashSet<MarkedPoint>();
-	  
-	    System.out.println("MARQUAGE TERMINE");
-	    ArrayList<Point> sol = new ArrayList<Point>();
-	    for(MarkedPoint p : blacks) {
-	    		sol.add(p);
-	    }
-	    System.out.println("CREATION LISTE TERMINE");	    
-	    System.out.println("CREATION DES NOEUDS BLEUS.....");
-	    
-	    
-	    for(int i =5; i>1; i--) {
-	    	System.out.println("i = "+i);
-	    	
-    		for(MarkedPoint p : greys) {
-    			if(p.getColour()==Colour.GREY) {// je check si le noeud est gris, histoire de pas risque de retraiter un bleu
-    											// mais normalement pas besoin
-	    			
-    				//---------------------------- j'utilise ca pour trouver le nombre de black-blue component differents
-    				Set<Integer> diff = new HashSet<Integer>(); 
-	    			ArrayList<MarkedPoint> voisins = neighborMarked(p, blacks, edgeThreshold);
-	    			for(MarkedPoint q : voisins) {
-	    				diff.add(q.getComp());
+		 int comp = 0;
+		    ArrayList<MarkedPoint> blacks = new ArrayList<MarkedPoint>();
+		    
+		    for(Point p : blackPoints) {
+		    	MarkedPoint point = new MarkedPoint(p.x, p.y, Colour.BLACK, comp);
+		    	composants.add(new ArrayList<MarkedPoint>());
+		    	composants.get(comp).add(point);
+		    	comp++;
+		    	blacks.add(point);
+		    }
+		    
+		    
+		    
+		    ArrayList<MarkedPoint> greys = new ArrayList<MarkedPoint>();
+		    for(Point p : greyPoints) {
+		    	greys.add(new MarkedPoint(p.x, p.y, Colour.GREY));
+		    }
+		    
+		    
+		    
+		    
+		    Set<MarkedPoint> blues = new HashSet<MarkedPoint>();
+		  
+		    System.out.println("MARQUAGE TERMINE");
+		    ArrayList<Point> sol = new ArrayList<Point>();
+		    for(MarkedPoint p : blacks) {
+		    		sol.add(p);
+		    }
+		    System.out.println("CREATION LISTE TERMINE");	    
+		    System.out.println("CREATION DES NOEUDS BLEUS.....");
+		    
+		    
+		    for(int i =5; i>1; i--) {
+		    	System.out.println("i = "+i);
+		    	
+	    		for(MarkedPoint p : greys) {
+	    			if(p.getColour()==Colour.GREY) {// je check si le noeud est gris, histoire de pas risque de retraiter un bleu
+	    											// mais normalement pas besoin
+		    			
+	    				//---------------------------- j'utilise ca pour trouver le nombre de black-blue component differents
+	    				Set<Integer> diff = new HashSet<Integer>(); 
+		    			ArrayList<MarkedPoint> voisins = neighborMarked(p, blacks, edgeThreshold);
+		    			for(MarkedPoint q : voisins) {
+		    				diff.add(q.getComp());
+		    			}
+		    			//----------------------------
+		    			
+		    			if(diff.size()==i || diff.size()>5) {
+		    				p.setColour(Colour.BLUE); // si il a assez de black blue comp, je l'ajoute
+		    				blues.add(p);
+		    				for(int j =1; j< voisins.size(); j++) { // je parcours ses voisins noirs
+		    					
+		    					if(voisins.get(j).getComp()!=voisins.get(0).getComp()) { // pour eviter qu'un voisin du meme composant se reajoute
+			    					for(MarkedPoint q : composants.get(voisins.get(j).getComp())) {
+			    						q.setComponent(voisins.get(0).getComp()); //je MaJ le numero de composant du point
+			    					}
+			    					// et ici j'ajoute tous les points de l'arraylist correspondant au composant du point que je regarde
+			    					// a l'arraylist du composant du premier point noir des voisins
+			    					composants.get(voisins.get(0).getComp()).addAll(composants.get((voisins.get(j).getComp())));
+			    					//et je les retire de leur ancienne liste
+			    					composants.get((voisins.get(j).getComp())).clear(); 
+		    					}   					
+		    				}
+		    			}
 	    			}
-	    			//----------------------------
-	    			
-	    			if(diff.size()==i || diff.size()>5) {
-	    				p.setColour(Colour.BLUE); // si il a assez de black blue comp, je l'ajoute
-	    				blues.add(p);
-	    				for(int j =1; j< voisins.size(); j++) { // je parcours ses voisins noirs
-	    					
-	    					if(voisins.get(j).getComp()!=voisins.get(0).getComp()) { // pour eviter qu'un voisin du meme composant se reajoute
-		    					for(MarkedPoint q : composants.get(voisins.get(j).getComp())) {
-		    						q.setComponent(voisins.get(0).getComp()); //je MaJ le numero de composant du point
-		    					}
-		    					// et ici j'ajoute tous les points de l'arraylist correspondant au composant du point que je regarde
-		    					// a l'arraylist du composant du premier point noir des voisins
-		    					composants.get(voisins.get(0).getComp()).addAll(composants.get((voisins.get(j).getComp())));
-		    					//et je les retire de leur ancienne liste
-		    					composants.get((voisins.get(j).getComp())).clear(); 
-	    					}   					
-	    				}
-	    			}
-    			}
-    		}
+	    		}
+			}
+		    System.out.println("CREATION DES NOEUDS BLEUS TERMINEE");
+		    
+		   
+		    ArrayList<Point> dom_sol = new ArrayList<Point>();
+		    dom_sol.addAll(blues);
+		    dom_sol.addAll(blacks);
+
+		    return dom_sol;
+
 		}
-	    System.out.println("CREATION DES NOEUDS BLEUS TERMINEE");
-	    
-	   
-	    ArrayList<Point> dom_sol = new ArrayList<Point>();
-	    dom_sol.addAll(blues);
-	    dom_sol.addAll(blacks);
-	    System.out.println(blues.size());
-	    
-	    
-	    
-//	    return sol;
-	    return dom_sol;
-	   
-		
-	}
 	
 	
-	// ---------------- Dominating Set + Steiner ------------------- //
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		//----------------------------------------------------------------//
+		//-------------------- MIS Basique + Steiner ---------------------//
+		//----------------------------------------------------------------//
+	
+//	public ArrayList<Point> calculConnectedDominatingSet(ArrayList<Point> points, int edgeThreshold) {
+//		System.out.println("MARQUAGE....");
+//		
+//		Collections.shuffle(points);
+//		
+//		
+//		
+//		//Creation du MIS
+//		ArrayList<Point> blackPoints = new ArrayList<Point>();
+//		ArrayList<Point> greyPoints = new ArrayList<Point>();
+//		ArrayList<Point> reste = (ArrayList<Point>) points.clone();
+//		ArrayList<ArrayList<MarkedPoint>> composants = new ArrayList<ArrayList<MarkedPoint>>();
+//		
+//		int ind_max = 0;
+//		int n_max = 0;
+//		
+//		for(int i = 0; i< points.size(); i++) {
+//			ArrayList<Point> v = neighbor(points.get(i), points, edgeThreshold);
+//			if(v.size()>n_max) {
+//				ind_max = i;
+//				n_max = v.size();
+//			}
+//		}
+//		blackPoints.add(reste.get(ind_max));
+//		for(Point p : neighbor(points.get(ind_max), points, edgeThreshold)) {
+//			reste.remove(p);
+//			greyPoints.add(p);
+//		
+//		}
+//		reste.remove(points.get(ind_max));
+//		
+//		
+//		while(!reste.isEmpty()) {
+//			
+//			ArrayList<Point> clone_reste = (ArrayList<Point>) reste.clone();
+//			Collections.shuffle(clone_reste);
+//			int indice = 0;
+//			int nb_voisins_blancs = 0;
+//			for(int n = 0; n<clone_reste.size(); n++) {
+//				Point p = clone_reste.get(n);
+//				ArrayList<Point> voisins = neighbor(p, points, edgeThreshold);
+//				boolean isGreyNeigh = false;
+//				boolean noBlackNeigh = true;
+//				
+//				for(Point q : voisins) {
+//					if(greyPoints.contains(q)) {
+//						isGreyNeigh=true;
+//					}
+//					if(blackPoints.contains(q)) {
+//						noBlackNeigh=false;
+//					}
+//				}
+//				if(isGreyNeigh && noBlackNeigh) {
+//	    			blackPoints.add(p);
+//	    			for(Point q : voisins) {
+//	    				
+//	    				if(reste.contains(q)) {
+//	    					greyPoints.add(q);
+//	        				reste.remove(q);
+//	    				}
+//	    				
+//	    			}
+//	    			reste.remove(p);
+//	    		}
+//			}
+//		}
+//					return calculSteiner(points, edgeThreshold, blackPoints);
+//	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	//----------------------------------------------------------------//
+	// ---------------- MIS Ameliore + Steiner ---------------------- //
+	//----------------------------------------------------------------//
 //	public ArrayList<Point> calculConnectedDominatingSet(ArrayList<Point> points, int edgeThreshold) {
 //		
 //		
 //				
-//				int pass = 0;
+//	System.out.println("MARQUAGE....");
+//
+//	Collections.shuffle(points);
+//
+//	
+//    
+//    //Creation du MIS
+//    ArrayList<Point> blackPoints = new ArrayList<Point>();
+//    ArrayList<Point> greyPoints = new ArrayList<Point>();
+//    ArrayList<Point> reste = (ArrayList<Point>) points.clone();
+//    ArrayList<ArrayList<MarkedPoint>> composants = new ArrayList<ArrayList<MarkedPoint>>();
+//    
+//    int ind_max = 0;
+//    int n_max = 0;
+//    
+//    for(int i = 0; i< points.size(); i++) {
+//    	ArrayList<Point> v = neighbor(points.get(i), points, edgeThreshold);
+//    	if(v.size()>n_max) {
+//    		ind_max = i;
+//    		n_max = v.size();
+//    	}
+//    }
+//    blackPoints.add(reste.get(ind_max));
+//    for(Point p : neighbor(points.get(ind_max), points, edgeThreshold)) {
+//    	reste.remove(p);
+//    	greyPoints.add(p);
+//
+//    }
+//    reste.remove(points.get(ind_max));
+//    
+//    
+//    while(!reste.isEmpty()) {
+//    	
+//    	ArrayList<Point> clone_reste = (ArrayList<Point>) reste.clone();
+//    	Collections.shuffle(clone_reste);
+//    	int indice = 0;
+//    	int nb_voisins_blancs = 0;
+//    	for(int n = 0; n<clone_reste.size(); n++) {
+//    		Point p = clone_reste.get(n);
+//    		ArrayList<Point> voisins = neighbor(p, points, edgeThreshold);
+//    		boolean isGreyNeigh = false;
+//    		boolean noBlackNeigh = true;
+//    		
+//    		for(Point q : voisins) {
+//    			if(greyPoints.contains(q)) {
+//    				isGreyNeigh=true;
+//    			}
+//    			if(blackPoints.contains(q)) {
+//    				noBlackNeigh=false;
+//    			}
+//    		}
+//    		if(isGreyNeigh && noBlackNeigh) {
+//    			int nb_voisins = neighbor(p, clone_reste, edgeThreshold).size();
+//    			if(nb_voisins > nb_voisins_blancs) {
+//    				indice = n;
+//    				nb_voisins_blancs = nb_voisins;
+//    			}
+//    		}
+//    	}
+//    	Point p = clone_reste.get(indice);
+//    	ArrayList<Point> voisins = neighbor(p, points, edgeThreshold);
+//    	blackPoints.add(p);
+//		reste.remove(p);
+//		for(Point q : voisins) {
 //			
-//				System.out.println("begin");
-//				ArrayList <Point> final_sol = new ArrayList<Point>();
-//				int nb_points = 1000;
-//
-//				int essai = 0;
-//				while(true) {
-//					ArrayList<Point> sol = new ArrayList<Point>();
-//					ArrayList<Point> tmp = new ArrayList<Point>();
-//					ArrayList<Point> res = new ArrayList<Point>();
-//
-//					tmp = (ArrayList<Point>) points.clone();
-//
-//					while(!isValid(points,sol, edgeThreshold)) {
-//
-//						ArrayList<Point> clone = (ArrayList<Point>)tmp.clone();
-//						
-//						for(Point p: clone) {
-//							if(neighbor(p,tmp,edgeThreshold).size()==0) {
-//								sol.add(p);
-//								tmp.remove(p);
-//								res.add(p);
-//							}
-//						}
-//
-//						Collections.shuffle(tmp);
-//						Point s = new Point();
-//						double nbminN = 1000;
-//						for(Point p : tmp) {
-//							int nrs = neighbor(p,tmp,edgeThreshold).size();
-//
-//							if(nrs<nbminN) {
-//								nbminN = nrs;
-//								s = p;
-//							}
-//						}
-//						//System.out.println("etape 2");
-//						Point s2 = new Point();
-//						int neimax = -1;
-//						//System.out.println(neighbor(s,tmp,edgeThreshold).size());
-//						for(Point q : neighbor(s,tmp,edgeThreshold)) {
-//							int n = neighbor(q,tmp,edgeThreshold).size();
-//							if(n>neimax) {
-//								s2 = q;
-//								neimax = n;
-//								//	System.out.println("ah");
-//							}
-//						}
-//
-//
-//
-//						//s = tmp.get(0);
-//						sol.add(s2);
-//
-//						for(Point p_tmp: neighbor(s2,tmp,edgeThreshold)) {
-//							if(tmp.contains(p_tmp)) {
-//								tmp.remove(p_tmp);
-//								res.add(p_tmp);
-//							}
-//						}
-//						tmp.remove(s2);
-//
-//					}
-//					//Iterations de improve
-//					int i = 0;
-//					while(true) {
-//						ArrayList<Point> resu = improve(points, sol, edgeThreshold);
-//
-//						if(resu.size()<sol.size()) {
-//							sol.clear();
-//							sol.addAll(resu);
-//						}else {
-//							break;
-//						}
-//						i++;
-//					}
-//					if(sol.size()<nb_points) {
-//						final_sol = sol;
-//						nb_points = sol.size();
-//						essai = 0;
-//					}
-//					break;
-//				}
-//				
-//				System.out.println("FIN premiere etape");
-//				//Fin algo
-//				System.out.println("best score: "+nb_points);
-//
-//				System.out.println(final_sol.size());
-//				return calculSteiner(points, edgeThreshold, final_sol);
+//			if(reste.contains(q)) {
+//				greyPoints.add(q);
+//				reste.remove(q);
+//			}
+//			
+//		}
+//    	
+//    }
+//				return calculSteiner(points, edgeThreshold, blackPoints);
 //				//return final_sol;
 //				
 //	}
@@ -722,71 +902,7 @@ public class DefaultTeam {
 	
 	
 
-	//FILE PRINTER
-	private void saveToFile(String filename,ArrayList<Point> result){
-		int index=0;
-		try {
-			while(true){
-				BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(filename+".points")));
-				try {
-					input.close();
-				} catch (IOException e) {
-					System.err.println("I/O exception: unable to close "+filename+Integer.toString(index)+".points");
-				}
-				index++;
-			}
-		} catch (FileNotFoundException e) {
-			printToFile(filename+".points",result);
-		}
-	}
-	private void printToFile(String filename,ArrayList<Point> points){
-		try {
-			PrintStream output = new PrintStream(new FileOutputStream(filename));
-			int x,y;
-			for (Point p:points) output.println(Integer.toString((int)p.getX())+" "+Integer.toString((int)p.getY()));
-			output.close();
-		} catch (FileNotFoundException e) {
-			System.err.println("I/O exception: unable to create "+filename);
-		}
-	}
-
-	//FILE LOADER
-	private ArrayList<Point> readFromFile(String filename) {
-		String line;
-		String[] coordinates;
-		ArrayList<Point> points=new ArrayList<Point>();
-		try {
-			BufferedReader input = new BufferedReader(
-					new InputStreamReader(new FileInputStream(filename))
-					);
-			try {
-				while ((line=input.readLine())!=null) {
-					coordinates=line.split("\\s+");
-					points.add(new Point(Integer.parseInt(coordinates[0]),
-							Integer.parseInt(coordinates[1])));
-				}
-			} catch (IOException e) {
-				System.err.println("Exception: interrupted I/O.");
-			} finally {
-				try {
-					input.close();
-				} catch (IOException e) {
-					System.err.println("I/O exception: unable to close "+filename);
-				}
-			}
-		} catch (FileNotFoundException e) {
-			System.err.println("Input file not found.");
-		}
-		return points;
-	}
 	
-	
-	
-	
-	
-	
-
-
 }
 
 
