@@ -340,7 +340,6 @@ public class DefaultTeam {
 			if(!sol.contains(e.p)) sol.add(e.p);
 			if(!sol.contains(e.q)) sol.add(e.q);
 		}
-		System.out.println("size sol = "+sol.size());
 		return sol;
 		//return new Tree2D(solution.get(0).p, edgesToTree(solution, solution.get(0).p));
 
@@ -419,8 +418,34 @@ public class DefaultTeam {
 		}
 		return clone_sol;
 	}
+	
+	
+	
+	public boolean isMISValid(ArrayList<Point> blackpoints, int edgeThreshold) {
+		
+		for(Point p : blackpoints) {
+			if(neighbor(p, blackpoints, edgeThreshold).size()>0) {
+				return false;
+			}
+		}
+		return true;
+		
+	}
+	
+	
+	public void treeVisit(ArrayList<MarkedPoint> points, MarkedPoint p, int edgeThreshold) {
+		p.visit();
+		for(MarkedPoint q : neighborMarked(p, points, edgeThreshold)) {
+			if(!q.isVisited()) {
+				treeVisit(points, points.get(points.indexOf(q)), edgeThreshold);
+			}
+		}
+	}
+	
+	
+	
 
-
+//--------------------------------------------------------------- Algos -----------------------------------------------------------------//
 
 	//------------------------------------------------------------------------//
 	//------------------ MIS Basique + Steiner (papier) ----------------------//
@@ -574,8 +599,7 @@ public class DefaultTeam {
 		
 		Collections.shuffle(points);
 		
-		
-		
+
 	    //Creation du MIS
 	    ArrayList<Point> blackPoints = new ArrayList<Point>();
 	    ArrayList<Point> greyPoints = new ArrayList<Point>();
@@ -643,7 +667,10 @@ public class DefaultTeam {
 			}
 	    	
 	    }
-		 int comp = 0;
+	    
+	    // Verification du MIS
+	    if(isMISValid(blackPoints, edgeThreshold)) {
+	    	int comp = 0;
 		    ArrayList<MarkedPoint> blacks = new ArrayList<MarkedPoint>();
 		    
 		    for(Point p : blackPoints) {
@@ -711,198 +738,28 @@ public class DefaultTeam {
 	    		}
 			}
 		    System.out.println("CREATION DES NOEUDS BLEUS TERMINEE");
-		    
-		   
+
 		    ArrayList<Point> dom_sol = new ArrayList<Point>();
 		    dom_sol.addAll(blues);
 		    dom_sol.addAll(blacks);
-
+		    
+			ArrayList<MarkedPoint> visit = new ArrayList<MarkedPoint>();
+		    for(Point p : dom_sol) {
+		    	visit.add(new MarkedPoint(p.x, p.y));
+		    }
+		    treeVisit(visit, visit.get(0), edgeThreshold);
+		    for(MarkedPoint p : visit) {
+		    	if(!p.isVisited()) {
+		    		System.out.println("SOLUTION INVALIDE");
+		    		return null;
+		    	}
+		    }
 		    return dom_sol;
-
-		}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-		//----------------------------------------------------------------//
-		//-------------------- MIS Basique + Steiner ---------------------//
-		//----------------------------------------------------------------//
-	
-//	public ArrayList<Point> calculConnectedDominatingSet(ArrayList<Point> points, int edgeThreshold) {
-//		System.out.println("MARQUAGE....");
-//		
-//		Collections.shuffle(points);
-//		
-//		
-//		
-//		//Creation du MIS
-//		ArrayList<Point> blackPoints = new ArrayList<Point>();
-//		ArrayList<Point> greyPoints = new ArrayList<Point>();
-//		ArrayList<Point> reste = (ArrayList<Point>) points.clone();
-//		ArrayList<ArrayList<MarkedPoint>> composants = new ArrayList<ArrayList<MarkedPoint>>();
-//		
-//		int ind_max = 0;
-//		int n_max = 0;
-//		
-//		for(int i = 0; i< points.size(); i++) {
-//			ArrayList<Point> v = neighbor(points.get(i), points, edgeThreshold);
-//			if(v.size()>n_max) {
-//				ind_max = i;
-//				n_max = v.size();
-//			}
-//		}
-//		blackPoints.add(reste.get(ind_max));
-//		for(Point p : neighbor(points.get(ind_max), points, edgeThreshold)) {
-//			reste.remove(p);
-//			greyPoints.add(p);
-//		
-//		}
-//		reste.remove(points.get(ind_max));
-//		
-//		
-//		while(!reste.isEmpty()) {
-//			
-//			ArrayList<Point> clone_reste = (ArrayList<Point>) reste.clone();
-//			Collections.shuffle(clone_reste);
-//			int indice = 0;
-//			int nb_voisins_blancs = 0;
-//			for(int n = 0; n<clone_reste.size(); n++) {
-//				Point p = clone_reste.get(n);
-//				ArrayList<Point> voisins = neighbor(p, points, edgeThreshold);
-//				boolean isGreyNeigh = false;
-//				boolean noBlackNeigh = true;
-//				
-//				for(Point q : voisins) {
-//					if(greyPoints.contains(q)) {
-//						isGreyNeigh=true;
-//					}
-//					if(blackPoints.contains(q)) {
-//						noBlackNeigh=false;
-//					}
-//				}
-//				if(isGreyNeigh && noBlackNeigh) {
-//	    			blackPoints.add(p);
-//	    			for(Point q : voisins) {
-//	    				
-//	    				if(reste.contains(q)) {
-//	    					greyPoints.add(q);
-//	        				reste.remove(q);
-//	    				}
-//	    				
-//	    			}
-//	    			reste.remove(p);
-//	    		}
-//			}
-//		}
-//					return calculSteiner(points, edgeThreshold, blackPoints);
-//	}
-
-	
-	
-	
-	
-	
-	
-	
-	
-	//----------------------------------------------------------------//
-	// ---------------- MIS Ameliore + Steiner ---------------------- //
-	//----------------------------------------------------------------//
-//	public ArrayList<Point> calculConnectedDominatingSet(ArrayList<Point> points, int edgeThreshold) {
-//		
-//		
-//				
-//	System.out.println("MARQUAGE....");
-//
-//	Collections.shuffle(points);
-//
-//	
-//    
-//    //Creation du MIS
-//    ArrayList<Point> blackPoints = new ArrayList<Point>();
-//    ArrayList<Point> greyPoints = new ArrayList<Point>();
-//    ArrayList<Point> reste = (ArrayList<Point>) points.clone();
-//    ArrayList<ArrayList<MarkedPoint>> composants = new ArrayList<ArrayList<MarkedPoint>>();
-//    
-//    int ind_max = 0;
-//    int n_max = 0;
-//    
-//    for(int i = 0; i< points.size(); i++) {
-//    	ArrayList<Point> v = neighbor(points.get(i), points, edgeThreshold);
-//    	if(v.size()>n_max) {
-//    		ind_max = i;
-//    		n_max = v.size();
-//    	}
-//    }
-//    blackPoints.add(reste.get(ind_max));
-//    for(Point p : neighbor(points.get(ind_max), points, edgeThreshold)) {
-//    	reste.remove(p);
-//    	greyPoints.add(p);
-//
-//    }
-//    reste.remove(points.get(ind_max));
-//    
-//    
-//    while(!reste.isEmpty()) {
-//    	
-//    	ArrayList<Point> clone_reste = (ArrayList<Point>) reste.clone();
-//    	Collections.shuffle(clone_reste);
-//    	int indice = 0;
-//    	int nb_voisins_blancs = 0;
-//    	for(int n = 0; n<clone_reste.size(); n++) {
-//    		Point p = clone_reste.get(n);
-//    		ArrayList<Point> voisins = neighbor(p, points, edgeThreshold);
-//    		boolean isGreyNeigh = false;
-//    		boolean noBlackNeigh = true;
-//    		
-//    		for(Point q : voisins) {
-//    			if(greyPoints.contains(q)) {
-//    				isGreyNeigh=true;
-//    			}
-//    			if(blackPoints.contains(q)) {
-//    				noBlackNeigh=false;
-//    			}
-//    		}
-//    		if(isGreyNeigh && noBlackNeigh) {
-//    			int nb_voisins = neighbor(p, clone_reste, edgeThreshold).size();
-//    			if(nb_voisins > nb_voisins_blancs) {
-//    				indice = n;
-//    				nb_voisins_blancs = nb_voisins;
-//    			}
-//    		}
-//    	}
-//    	Point p = clone_reste.get(indice);
-//    	ArrayList<Point> voisins = neighbor(p, points, edgeThreshold);
-//    	blackPoints.add(p);
-//		reste.remove(p);
-//		for(Point q : voisins) {
-//			
-//			if(reste.contains(q)) {
-//				greyPoints.add(q);
-//				reste.remove(q);
-//			}
-//			
-//		}
-//    	
-//    }
-//				return calculSteiner(points, edgeThreshold, blackPoints);
-//				//return final_sol;
-//				
-//	}
-//	
-	
-	
-
-	
+	    }else{
+	    	System.out.println("MIS invalide");
+	    	return null;//la
+	    }		 
+	}	
 }
 
 
