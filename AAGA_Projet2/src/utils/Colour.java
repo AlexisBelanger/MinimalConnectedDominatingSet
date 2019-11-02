@@ -1,4 +1,4 @@
-package Papier;
+package utils;
 
 public enum Colour {
 	BLACK,

@@ -1,4 +1,4 @@
-package Papier;
+package utils;
 
 import java.awt.Point;
 
